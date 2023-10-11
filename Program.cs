@@ -93,6 +93,7 @@
                         case "6":
                             break;
                         default:
+                            Console.WriteLine("Måste jag göra en förändring i koden för att få göra en commit?");
                             break;
                     }
                 }
