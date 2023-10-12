@@ -2,7 +2,7 @@
 {
     internal class Program
     {
-        /* NÄSTA STEG ÄR ATT lösa konton
+        /* NÄSTA STEG ÄR ATT jobba med inloggningen
 
         Först lista med array bestående av användare + lösen. Men hur binda till konton?
         Börjar överväga en kund-klass-objekt. Och göra en lista av alla objekt.
@@ -33,39 +33,57 @@
         Vore kul att välja bindningstid på sparkontot och lägga till olika räntor
 
 
-
-
-
         */
-
 
         static void Main(string[] args)
         {
+            // Varje array i listan har två element. En för användarnamn, en för lösenord.
             List<string[]> customers = new List<string[]>();
-            
+
+            // I denna lista kommer konton lagras, varje konto-objekt består av user, accountName, och sum.
+            List<Account> accountList = new List<Account>();
 
             while (true)
             {
-                bool welcomeMenu = false;
-                Console.Clear();
+                bool loginSuccessful = false;
+                
                 Console.WriteLine("Välkommen till Banken\n");
                 Console.WriteLine("[1] Vill du registrera dig som ny kund hos oss?");
                 Console.WriteLine("[2] Logga in.");
                 string choice = Console.ReadLine();
+                Console.Clear();
                 if (choice == "1")
                 {
                     NewCustomer(customers);
                 }
                 else if (choice == "2")
                 {
-                    Login(customers);
+                    string message = "Användarnamnet fanns inte registrerat";
+                    Console.WriteLine("Vad är ditt användarnamn?");
+                    string username = Console.ReadLine();
+                    foreach (string[] item in customers)
+                    {
+                        if (username == item[0])
+                        {
+                            message = "Fel lösenord";
+                            Console.WriteLine("Vad är ditt lösenord?");
+                            string password = Console.ReadLine();
+                            if(password == item[1])
+                            {
+                                message = "Du är inloggad";
+                                loginSuccessful = true;
+                            }
+                        }
+                    }
+                    Console.WriteLine(message);
+                    // TIMEWARP... här! Check banned list.
                 }
                 else
                 {
                     Console.WriteLine("Ogiltigt val. Försök igen.");
                 }
 
-                while (welcomeMenu)
+                while (loginSuccessful)
                 {
                     // Välkomstmeny
                     // Se konton och saldo. Öppna nytt konto. Överföra. Sätta in. Ta ut.
@@ -81,8 +99,15 @@
                     switch (choice)
                     {
                         case "1":
+                            // Gå igenom lista med account-objekt och sök efter Account.user == (det aktiva usernamet)
+                            // Skriv ut alla konton
+                            // Om det inte finns några konton så skriv "Du har inga konton".
                             break;
                         case "2":
+                            Account newAccount;
+                            Console.Write("Vad ska ditt konto heta? ");
+                            string accountName = Console.ReadLine();
+                            //newAccount = new Account(username, accountName);
                             break;
                         case "3":
                             break;
@@ -98,13 +123,10 @@
                     }
                 }
             }
-
         }
         public static void NewCustomer(List<string[]> customers)
         {
             string[] customer = new string[2];
-
-            Console.Clear();
             Console.WriteLine("Vad ska du ha för användarnamn?");
             customer[0] = Console.ReadLine();
             Console.WriteLine("Vad ska du ha för lösenord?"); // Would be cool to convert inserted characters to *
@@ -112,41 +134,12 @@
 
             // Must make an object to be able to call the customers List
             customers.Add(customer);
+            Console.Clear();
         }
 
-        public static bool Login(List<string[]> customers)
+        public static void Login(List<string[]> customers, string username)
         {
-            Console.Clear();
-            Console.Write("Ange användarnamn: ");
-            // TIMEWARP... här! Check banned list.
-            string username = Console.ReadLine();
-            int loginCount = 0;
-            bool loginSuccessful = false;
 
-            // Kontrollera att användarnamnet finns i customer List
-            foreach (string[] item in customers)
-            {
-                if (username == item[0])
-                {
-                    Console.Write("Ange ditt lösenord: ");
-                    string password = Console.ReadLine();
-                    if (password == item[1])
-                    {
-                        Console.WriteLine("Du är inloggad!");
-                        loginSuccessful = true;
-                        Console.ReadLine();
-                    }
-                    else
-                    {
-                        Console.WriteLine("Fel lösenord!");
-                        Console.ReadLine();
-                        // Efter tre försök så läggs aktuellt användarnamn till
-                        // banned list, som är en array
-                        // denna array använs vid inlog sedan. Typ ... TIMEWARP
-                    }
-                }
-            }
-            return loginSuccessful;
         }
     }
 }
