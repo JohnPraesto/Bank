@@ -5,8 +5,10 @@ namespace Bank
     internal class Program
     {
         /* 
-        NÄSTA STEG ÄR ATT jobba med insättning
+        NÄSTA STEG ÄR ATT fortsätta jobba med "ta ut pengar". användare måste ange pinkod. samt 
+        att användaren endast ska tillåtas mata in displayade kontonummer.
 
+        gör sum till double i account-klassen
 
         jobba ner djupet och skapa metoder för att städa upp kod
 
@@ -96,8 +98,7 @@ namespace Bank
                         }
                     }
                     Console.WriteLine(message);
-                    Console.WriteLine("\nTryck Enter för att gå vidare."); // Får vi många fler av denna bör det bli egen metod
-                    Console.ReadLine();
+                    PressEnter();
                     Console.Clear();
                 }
                 else
@@ -143,8 +144,7 @@ namespace Bank
                             newAccount = new Account(username, accountName);
                             accountList.Add(newAccount);
                             Console.WriteLine($"Du har nu skapat ett nytt konto med namn {accountName}");
-                            Console.WriteLine("Enter för att gå vidare.");
-                            Console.ReadLine();
+                            PressEnter();
                             break;
                         case "3":
                             // Insättning
@@ -167,14 +167,19 @@ namespace Bank
                                     test = true;
                                 }
                             }
+                            //(Man kan kalla indexplats för varje konto dess kontonummer.
                             if(test)
                             {
                                 while (true)
                                 {
                                     Console.WriteLine("Vilket konto vill du sätta in pengar på? ");
-                                    string chooseAccount = Console.ReadLine();
+                                    string chooseAccount = Console.ReadLine(); // Vad händer om användaren
+                                    // lyckas välja ett index som finns, men som tillhör en annan användare?
+                                    // OCH användaren ska inte kunna mata in ett indexnummer som inte finns
+                                    // Hmm, undvika båda problemen om användaren endast tillåts mata in indexnr
+                                    // som displayas
 
-                                    if (int.TryParse(chooseAccount, out int accountNr))
+                                    if (int.TryParse(chooseAccount, out int accountNr2))
                                     {
                                         while (true)
                                         {
@@ -182,7 +187,7 @@ namespace Bank
                                             string deposit = Console.ReadLine();
                                             if (int.TryParse(deposit, out int depositInt))
                                             {
-                                                accountList[accountNr].sum = depositInt;
+                                                accountList[accountNr2].sum = depositInt;
                                                 break;
                                             }
                                             else
@@ -195,6 +200,8 @@ namespace Bank
                                     else
                                     {
                                         Console.WriteLine("Input not acceptable");
+                                        Console.WriteLine("Enter för att gå vidare.");
+                                        Console.ReadLine();
                                     }
                                 }
                                 
@@ -203,18 +210,65 @@ namespace Bank
                             {
                                 Console.WriteLine("Du har inga konton.");
                             }
-                            Console.WriteLine("Enter för att gå vidare.");
-                            Console.ReadLine();
+                            PressEnter();
                             break;
-                        case "4":
+                        case "4": // TA UT PENGAR
+                            // glöm inte att användaren måste ange sin pinkod för att lyckas ta ut pengar
+
+                            for (int i = 0; i < accountList.Count; i++)
+                            {
+                                if (accountList[i].userName == username)
+                                {
+                                    Console.WriteLine($"[{i}] " + accountList[i].accountName + " " + accountList[i].sum);
+                                }
+                            }
+
+
+                            Console.Write("Vilket konto vill du dra pengar från? Ange kontonummer: ");
+                            // Endast tillåta användaren att mata in de kontonummer som presenteras... på nåt sätt
+                            // kanske en array som laddas med indexnumrena
+                            string accountWithdrawl = Console.ReadLine();
+
+                            if (int.TryParse(accountWithdrawl, out int accountNr))
+                            {
+                                while (true)
+                                {
+                                    Console.Write("Hur mycket vill du ta ut? ");
+                                    string withdrawl = Console.ReadLine();
+                                    if (int.TryParse(withdrawl, out int withdrawlInt))
+                                    {
+                                        if(accountList[accountNr].sum > withdrawlInt)
+                                        {
+                                            accountList[accountNr].sum -= withdrawlInt;
+                                            Console.WriteLine($"Du har tagit ut {withdrawlInt} kr från kontot.");
+                                            PressEnter();
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Du har inte så mycket pengar på kontot!");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Du har matat in ogiltiga tecken. Försök igen.");
+                                    }
+                                }
+                                break;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Input not acceptable");
+                            }
+
+
                             break;
                         case "5":
                             break;
                         case "6":
                             loginSuccessful = false;
                             Console.WriteLine("Du är nu utloggad");
-                            Console.WriteLine("Enter för att gå vidare.");
-                            Console.ReadLine();
+                            PressEnter();
                             break;
                         default:
                             Console.WriteLine("Ogiltigt val.");
@@ -255,6 +309,12 @@ namespace Bank
         public static void Login(List<string[]> customers, string username)
         {
 
+        }
+
+        public static void PressEnter()
+        {
+            Console.WriteLine("Enter för att gå vidare.");
+            Console.ReadLine();
         }
     }
 }
