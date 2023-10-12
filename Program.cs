@@ -2,36 +2,14 @@
 {
     internal class Program
     {
-        /* NÄSTA STEG ÄR ATT jobba med att skapa nytt account
+        /* 
+        NÄSTA STEG ÄR ATT jobba med inloggningsförsöken
 
-        Först lista med array bestående av användare + lösen. Men hur binda till konton?
-        Börjar överväga en kund-klass-objekt. Och göra en lista av alla objekt.
-        Struktur:
-        string namn
-        string lösen
-        int inloggningsförsök
-        
-        eller hmm. kanske behålla användare och lösen som det är nu.
-        och bara göra objekt för konton och dess saldon?
-        string kontoNamn;
-        int summa;
-        och sen göra en lista med konto-objekt. Men hur koppla det till rätt användare?
-
-        Man kan göra en och samma lista för alla startade konton. Men man lägger till
-        string user;
-        i klassen
-        så när inloggar användare vill se sina konton så
-        foreach konto in kontolista
-            if konto.user == inloggad användare
-                write konto.kontoNamn
-                write konto.summa
-         * 
         utreda hur man sparar mellan körningar
 
         ska inte gå att registrera samma användarnamn flera gånger.
         
         Vore kul att välja bindningstid på sparkontot och lägga till olika räntor
-
 
         */
 
@@ -43,13 +21,18 @@
             // I denna lista kommer konton lagras, varje konto-objekt består av user, accountName, och sum.
             List<Account> accountList = new List<Account>();
 
+            // Denna lista laddas med användare som skrivit in fel lösenord för många gånger
+            // De som läggs till i listan kommer inte få försöka logga in igen.
+            List<string> bannedList = new List<string>();
+
             string username = "";
             string message = "";
 
             while (true)
             {
                 bool loginSuccessful = false;
-                
+                bool locked = false ;
+
                 Console.WriteLine("Välkommen till Banken\n");
                 Console.WriteLine("[1] Vill du registrera dig som ny kund hos oss?");
                 Console.WriteLine("[2] Logga in.");
@@ -61,26 +44,55 @@
                 }
                 else if (choice == "2")
                 {
-                    // Nånstans här inne ska tre inloggningsförsök läggas till
                     Console.WriteLine("Vad är ditt användarnamn?");
                     username = Console.ReadLine();
                     message = $"Användarnamnet '{username}' fanns inte registrerat";
-                    foreach (string[] item in customers)
+                    int passwordTries = 0;
+
+                    foreach (string item in bannedList)
                     {
-                        if (username == item[0])
+                        if (item == username)
                         {
-                            message = "Fel lösenord";
-                            Console.WriteLine("Vad är ditt lösenord?");
-                            string password = Console.ReadLine();
-                            if(password == item[1])
+                            message = "Denna användare är låst av säkerhetsskäl.";
+                            locked = true;
+                        }
+                    }
+
+                    if(locked == false)
+                    {
+                        foreach (string[] item in customers)
+                        {
+                            if (username == item[0])
                             {
-                                message = "Du är inloggad";
-                                loginSuccessful = true;
+                                while (passwordTries < 3)
+                                {
+                                    Console.WriteLine("Vad är ditt lösenord?\n");
+                                    string password = Console.ReadLine();
+                                    if (password == item[1])
+                                    {
+                                        message = "Du är inloggad";
+                                        loginSuccessful = true;
+                                    }
+                                    else if (password != item[1])
+                                    {
+                                        passwordTries++;
+                                        if (passwordTries == 3)
+                                        {
+                                            message = "Du har akrivit in fel lösenord för många gånger. Användaren låst.";
+                                            bannedList.Add(username);
+                                        }
+                                        Console.WriteLine("Fel lösenord");
+                                        Console.WriteLine($"Återstående försök: {3 - passwordTries}\n");
+                                    }
+                                }
                             }
                         }
                     }
+                    
                     Console.WriteLine(message);
-                    // TIMEWARP... här! Check banned list.
+                    Console.WriteLine("\nTryck Enter för att gå vidare.");
+                    Console.ReadLine();
+                    Console.Clear();
                 }
                 else
                 {
@@ -174,6 +186,17 @@ Först lista med array bestående av användare + lösen. Men hur binda till kon
 Börjar överväga objekt.
 Struktur:
 
+inte riktigt nöjd med messege =
+beroende på var i if-sataserna man är
+den ska meddela om man lyckats logga in eller fel lösenord eller användare finns ej
+
+känner hela tiden att jag är missnöjd med koden jag skapar
+iom jag var bortrest förra veckan och iom jag har ambitiösa mål
+inte bara för betyg, men mest för att lära, vill jag uppnå alla VG mål
+samt inkludera alla funtkioner i mitt program, även extrauppgifterna.
+Så är jag stressad för att jag inte har mer tid. Jag slänger mig in i lösningar
+innan de är färdigtänkta. Och känner inte att jag hinner göra om och tänka om.
+Pga tidsbrist måste jag välja de lätta lösningarna som jag redan påbörjat.
 
 */
 
