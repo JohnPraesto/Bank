@@ -3,11 +3,15 @@
     internal class Program
     {
         /* 
-        NÄSTA STEG ÄR ATT jobba med inloggningsförsöken
+        NÄSTA STEG ÄR ATT ska inte gå att registrera samma användarnamn flera gånger.
+
+
+        jobba ner djupet och skapa metoder för att städa upp kod
+
 
         utreda hur man sparar mellan körningar
 
-        ska inte gå att registrera samma användarnamn flera gånger.
+        
         
         Vore kul att välja bindningstid på sparkontot och lägga till olika räntor
 
@@ -49,6 +53,8 @@
                     message = $"Användarnamnet '{username}' fanns inte registrerat";
                     int passwordTries = 0;
 
+                    // SÅNNAHÄR FOREACH-LOOPAR används ju hela tiden på olika ställen
+                    // undra om det går att göra en metod av just bara foeach-loopen på nåt sätt
                     foreach (string item in bannedList)
                     {
                         if (item == username)
@@ -157,13 +163,31 @@
         public static void NewCustomer(List<string[]> customers)
         {
             string[] customer = new string[2];
+            bool go = true;
             Console.WriteLine("Vad ska du ha för användarnamn?");
             customer[0] = Console.ReadLine();
-            Console.WriteLine("Vad ska du ha för lösenord?"); // Would be cool to convert inserted characters to *
-            customer[1] = Console.ReadLine();
+            foreach (string[] item in customers)
+            {
+                if (customer[0] == item[0])
+                {
+                    go = false;
+                }
+            }
+            if (go)
+            {
+                Console.WriteLine("Vad ska du ha för lösenord?"); // Would be cool to convert inserted characters to *
+                customer[1] = Console.ReadLine();
+                customers.Add(customer);
+            }
+            else if (go == false)
+            {
+                Console.WriteLine("Användarnamnet är uppgaget.\nTryck Enter.");
+                Console.ReadLine();
+            }
+            
 
             // Must make an object to be able to call the customers List
-            customers.Add(customer);
+            
             Console.Clear();
         }
 
