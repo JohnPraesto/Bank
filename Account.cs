@@ -12,5 +12,10 @@ namespace Bank
         public string accountName;
         public int sum;
 
+        public Account(string username, string accountName)
+        {
+            this.userName = username;
+            this.accountName = accountName;
+        }
     }
 }

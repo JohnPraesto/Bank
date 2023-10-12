@@ -2,7 +2,7 @@
 {
     internal class Program
     {
-        /* NÄSTA STEG ÄR ATT jobba med inloggningen
+        /* NÄSTA STEG ÄR ATT jobba med att skapa nytt account
 
         Först lista med array bestående av användare + lösen. Men hur binda till konton?
         Börjar överväga en kund-klass-objekt. Och göra en lista av alla objekt.
@@ -43,6 +43,9 @@
             // I denna lista kommer konton lagras, varje konto-objekt består av user, accountName, och sum.
             List<Account> accountList = new List<Account>();
 
+            string username = "";
+            string message = "";
+
             while (true)
             {
                 bool loginSuccessful = false;
@@ -58,9 +61,10 @@
                 }
                 else if (choice == "2")
                 {
-                    string message = "Användarnamnet fanns inte registrerat";
+                    // Nånstans här inne ska tre inloggningsförsök läggas till
                     Console.WriteLine("Vad är ditt användarnamn?");
-                    string username = Console.ReadLine();
+                    username = Console.ReadLine();
+                    message = $"Användarnamnet '{username}' fanns inte registrerat";
                     foreach (string[] item in customers)
                     {
                         if (username == item[0])
@@ -96,18 +100,32 @@
                     Console.WriteLine("[5] Uttag");
                     Console.WriteLine("[6] Logga ut");
                     choice = Console.ReadLine();
+                    Console.Clear();
                     switch (choice)
                     {
                         case "1":
                             // Gå igenom lista med account-objekt och sök efter Account.user == (det aktiva usernamet)
                             // Skriv ut alla konton
                             // Om det inte finns några konton så skriv "Du har inga konton".
+                            message = "Du har inga konton.\n";
+                            foreach (Account item in accountList)
+                            {
+                                if(item.userName == username)
+                                {
+                                    Console.WriteLine(item.accountName);
+                                    message = "";
+                                }
+                            }
+                            Console.WriteLine(message);
+                            Console.ReadLine();
+
                             break;
                         case "2":
                             Account newAccount;
                             Console.Write("Vad ska ditt konto heta? ");
                             string accountName = Console.ReadLine();
-                            //newAccount = new Account(username, accountName);
+                            newAccount = new Account(username, accountName);
+                            accountList.Add(newAccount);
                             break;
                         case "3":
                             break;
