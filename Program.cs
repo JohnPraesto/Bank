@@ -1,17 +1,16 @@
-﻿namespace Bank
+﻿using System.ComponentModel.Design;
+
+namespace Bank
 {
     internal class Program
     {
         /* 
-        NÄSTA STEG ÄR ATT ska inte gå att registrera samma användarnamn flera gånger.
+        NÄSTA STEG ÄR ATT jobba med insättning
 
 
         jobba ner djupet och skapa metoder för att städa upp kod
 
-
         utreda hur man sparar mellan körningar
-
-        
         
         Vore kul att välja bindningstid på sparkontot och lägga till olika räntor
 
@@ -29,13 +28,14 @@
             // De som läggs till i listan kommer inte få försöka logga in igen.
             List<string> bannedList = new List<string>();
 
-            string username = "";
+            
             string message = "";
 
             while (true)
             {
+                string username = "";
                 bool loginSuccessful = false;
-                bool locked = false ;
+                bool locked = false;
 
                 Console.WriteLine("Välkommen till Banken\n");
                 Console.WriteLine("[1] Vill du registrera dig som ny kund hos oss?");
@@ -76,8 +76,9 @@
                                     string password = Console.ReadLine();
                                     if (password == item[1])
                                     {
-                                        message = "Du är inloggad";
+                                        message = "Du är inloggad!";
                                         loginSuccessful = true;
+                                        break;
                                     }
                                     else if (password != item[1])
                                     {
@@ -94,9 +95,8 @@
                             }
                         }
                     }
-                    
                     Console.WriteLine(message);
-                    Console.WriteLine("\nTryck Enter för att gå vidare.");
+                    Console.WriteLine("\nTryck Enter för att gå vidare."); // Får vi många fler av denna bör det bli egen metod
                     Console.ReadLine();
                     Console.Clear();
                 }
@@ -107,15 +107,13 @@
 
                 while (loginSuccessful)
                 {
-                    // Välkomstmeny
-                    // Se konton och saldo. Öppna nytt konto. Överföra. Sätta in. Ta ut.
-                    // Logga ut (tar en till "Välkommen till Banken"...)
+                    Console.Clear();
                     Console.WriteLine("Välkommen!\n");
                     Console.WriteLine("[1] Se Konton och saldo");
                     Console.WriteLine("[2] Öppna nytt konto");
-                    Console.WriteLine("[3] Överföring");
-                    Console.WriteLine("[4] Insättning");
-                    Console.WriteLine("[5] Uttag");
+                    Console.WriteLine("[3] Insättning");
+                    Console.WriteLine("[4] Uttag");
+                    Console.WriteLine("[5] Överföring");
                     Console.WriteLine("[6] Logga ut");
                     choice = Console.ReadLine();
                     Console.Clear();
@@ -130,7 +128,7 @@
                             {
                                 if(item.userName == username)
                                 {
-                                    Console.WriteLine(item.accountName);
+                                    Console.WriteLine(item.accountName + " " + item.sum);
                                     message = "";
                                 }
                             }
@@ -144,17 +142,82 @@
                             string accountName = Console.ReadLine();
                             newAccount = new Account(username, accountName);
                             accountList.Add(newAccount);
+                            Console.WriteLine($"Du har nu skapat ett nytt konto med namn {accountName}");
+                            Console.WriteLine("Enter för att gå vidare.");
+                            Console.ReadLine();
                             break;
                         case "3":
+                            // Insättning
+                            // TIll metod, det är exakt samma kod som i case 1
+                            int accNr = 0;
+                            //foreach (Account item in accountList)
+                            //{
+                            //    if (item.userName == username)
+                            //    {
+                            //        accNr++;
+                            //        Console.WriteLine($"[{accNr}] " + item.accountName);
+                            //    }
+                            //}
+                            bool test = false;
+                            for (int i = 0; i < accountList.Count; i++)
+                            {
+                                if (accountList[i].userName == username)
+                                {
+                                    Console.WriteLine($"[{i}] " + accountList[i].accountName);
+                                    test = true;
+                                }
+                            }
+                            if(test)
+                            {
+                                while (true)
+                                {
+                                    Console.WriteLine("Vilket konto vill du sätta in pengar på? ");
+                                    string chooseAccount = Console.ReadLine();
+
+                                    if (int.TryParse(chooseAccount, out int accountNr))
+                                    {
+                                        while (true)
+                                        {
+                                            Console.Write("Hur mycket vill du sätta in? ");
+                                            string deposit = Console.ReadLine();
+                                            if (int.TryParse(deposit, out int depositInt))
+                                            {
+                                                accountList[accountNr].sum = depositInt;
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine("Din insättning innehöll ogiltiga tecken. Försök igen.");
+                                            }
+                                        }
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Input not acceptable");
+                                    }
+                                }
+                                
+                            }
+                            else if(test != true)
+                            {
+                                Console.WriteLine("Du har inga konton.");
+                            }
+                            Console.WriteLine("Enter för att gå vidare.");
+                            Console.ReadLine();
                             break;
                         case "4":
                             break;
                         case "5":
                             break;
                         case "6":
+                            loginSuccessful = false;
+                            Console.WriteLine("Du är nu utloggad");
+                            Console.WriteLine("Enter för att gå vidare.");
+                            Console.ReadLine();
                             break;
                         default:
-                            Console.WriteLine("Måste jag göra en förändring i koden för att få göra en commit?");
+                            Console.WriteLine("Ogiltigt val.");
                             break;
                     }
                 }
@@ -173,6 +236,7 @@
                     go = false;
                 }
             }
+
             if (go)
             {
                 Console.WriteLine("Vad ska du ha för lösenord?"); // Would be cool to convert inserted characters to *
@@ -184,9 +248,6 @@
                 Console.WriteLine("Användarnamnet är uppgaget.\nTryck Enter.");
                 Console.ReadLine();
             }
-            
-
-            // Must make an object to be able to call the customers List
             
             Console.Clear();
         }
@@ -200,6 +261,10 @@
 
 
 /* TILL README
+
+valt att man måste skapa användare. alla variabler och listor är tomma vid start.
+eftersom jag senare hoppas på att få in att det sparas mellan körningar.
+Men får se om jag hinner det.
 
 Tankar kring metoder. Repeterar kod? Rensar upp i main?
 
@@ -221,6 +286,8 @@ samt inkludera alla funtkioner i mitt program, även extrauppgifterna.
 Så är jag stressad för att jag inte har mer tid. Jag slänger mig in i lösningar
 innan de är färdigtänkta. Och känner inte att jag hinner göra om och tänka om.
 Pga tidsbrist måste jag välja de lätta lösningarna som jag redan påbörjat.
+
+SÅ arbetssättet jag anammat har varit att bara få nåt att funka... och ev senare slipa det
 
 */
 
