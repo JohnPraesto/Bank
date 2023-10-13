@@ -43,7 +43,6 @@ namespace Bank
                 string username = "";
                 bool loginSuccessful = false;
                 bool locked = false;
-                int passwordTries = 0;
 
                 Console.WriteLine("Välkommen till Banken\n");
                 Console.WriteLine("[1] Vill du registrera dig som ny kund hos oss?");
@@ -58,52 +57,22 @@ namespace Bank
                 {
                     Console.WriteLine("Vad är ditt användarnamn?");
                     username = Console.ReadLine();
-                    message = $"Användarnamnet '{username}' fanns inte registrerat";
                     
-
                     // SÅNNAHÄR FOREACH-LOOPAR används ju hela tiden på olika ställen
                     // undra om det går att göra en metod av just bara foeach-loopen på nåt sätt
                     foreach (string item in bannedList)
                     {
                         if (item == username)
                         {
-                            message = "Denna användare är låst av säkerhetsskäl.";
+                            Console.WriteLine("Denna användare är låst av säkerhetsskäl.");
                             locked = true;
                         }
                     }
 
                     if(locked == false)
                     {
-                        foreach (string[] item in customers)
-                        {
-                            if (username == item[0])
-                            {
-                                while (passwordTries < 3)
-                                {
-                                    Console.WriteLine("Vad är ditt lösenord?\n");
-                                    string password = Console.ReadLine();
-                                    if (password == item[1])
-                                    {
-                                        message = "Du är inloggad!";
-                                        loginSuccessful = true;
-                                        break;
-                                    }
-                                    else if (password != item[1])
-                                    {
-                                        passwordTries++;
-                                        if (passwordTries == 3)
-                                        {
-                                            message = "Du har akrivit in fel lösenord för många gånger. Användaren låst.";
-                                            bannedList.Add(username);
-                                        }
-                                        Console.WriteLine("Fel lösenord");
-                                        Console.WriteLine($"Återstående försök: {3 - passwordTries}\n");
-                                    }
-                                }
-                            }
-                        }
+                        loginSuccessful = Login(customers, username, bannedList);
                     }
-                    Console.WriteLine(message);
                     PressEnter();
                     Console.Clear();
                 }
@@ -111,7 +80,6 @@ namespace Bank
                 {
                     Console.WriteLine("Ogiltigt val. Försök igen.");
                 }
-
                 while (loginSuccessful)
                 {
                     Console.Clear();
@@ -219,44 +187,13 @@ namespace Bank
                             PressEnter();
                             break;
                         case "4": // TA UT PENGAR
-
-                            foreach (string[] item in customers)
-                            { 
-                                if (username == item[0])
-                                {
-                                    while (passwordTries < 3) // passwordTries sparas från inloggningen.
-                                    {
-                                        Console.WriteLine("Vill du ta ut pengar måste du först ange ditt lösenord?\n");
-                                        string password = Console.ReadLine();
-                                        if (password == item[1])
-                                        {
-                                            message = "Lösenord korrekt. Du kan nu ta ut pengar.";
-                                            loginSuccessful = true;
-                                            break;
-                                        }
-                                        else if (password != item[1])
-                                        {
-                                            passwordTries++;
-                                            if (passwordTries == 3)
-                                            {
-                                                message = "Du har skrivit in fel lösenord för många gånger. Användaren låst.";
-                                                loginSuccessful = false;
-                                                bannedList.Add(username);
-                                            }
-                                            Console.WriteLine("Fel lösenord");
-                                            Console.WriteLine($"Återstående försök: {3 - passwordTries}\n");
-                                        }
-                                    }
-                                }
-                            }
-
-                            Console.WriteLine(message);
-
+                            loginSuccessful = Login(customers, username, bannedList);
 
                             if (loginSuccessful)
                             {
-                                List<int> userAccounts = new List<int>(); // Lista skapas som laddas med de indexplatser
+                                // Lista skapas som laddas med de indexplatser
                                 // användarens konton ligger på i customers-listan
+                                List<int> userAccounts = new List<int>(); 
                                 for (int i = 0; i < accountList.Count; i++)
                                 {
                                     if (accountList[i].userName == username)
@@ -371,9 +308,41 @@ namespace Bank
             Console.Clear();
         }
 
-        public static void Login(List<string[]> customers, string username)
+        public static bool Login(List<string[]> customers, string username, List<string> bannedList)
         {
-
+            int passwordTries = 0;
+            foreach (string[] item in customers)
+            {
+                if (username == item[0])
+                {
+                    while (passwordTries < 3)
+                    {
+                        Console.Write("Ange ditt lösenord: ");
+                        string password = Console.ReadLine();
+                        if (password == item[1])
+                        {
+                            Console.WriteLine("Rätt lösenord!");
+                            //message = "Rätt lösenord!";
+                            return true;
+                        }
+                        else if (password != item[1])
+                        {
+                            passwordTries++;
+                            if (passwordTries == 3)
+                            {
+                                Console.WriteLine("Du har skrivit in fel lösenord för många gånger. Användaren låst.");
+                                //message = "Du har skrivit in fel lösenord för många gånger. Användaren låst.";
+                                bannedList.Add(username);
+                                return false;
+                            }
+                            Console.WriteLine("Fel lösenord");
+                            Console.WriteLine($"Återstående försök: {3 - passwordTries}\n");
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("Andändaren finns ej registrerad.");
+            return false;
         }
 
         public static void PressEnter()
