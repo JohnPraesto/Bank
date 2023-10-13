@@ -1,12 +1,13 @@
 ﻿using System.ComponentModel.Design;
+using System.Runtime.Serialization;
 
 namespace Bank
 {
     internal class Program
     {
         /* 
-        NÄSTA STEG ÄR ATT fortsätta jobba med "ta ut pengar". användare måste ange pinkod. samt 
-        att användaren endast ska tillåtas mata in displayade kontonummer.
+        NÄSTA STEG ÄR ATT användaren endast ska tillåtas mata in displayade kontonummer vid insättning, 
+        även senare överföring!
 
         gör sum till double i account-klassen
 
@@ -15,6 +16,10 @@ namespace Bank
         utreda hur man sparar mellan körningar
         
         Vore kul att välja bindningstid på sparkontot och lägga till olika räntor
+
+        Möjligt att effektivisera inloggningsmetoden om man kan ta ut användarens indexplats i customers-Listan?
+
+        Översätt allt till engelska
 
         */
 
@@ -38,6 +43,7 @@ namespace Bank
                 string username = "";
                 bool loginSuccessful = false;
                 bool locked = false;
+                int passwordTries = 0;
 
                 Console.WriteLine("Välkommen till Banken\n");
                 Console.WriteLine("[1] Vill du registrera dig som ny kund hos oss?");
@@ -53,7 +59,7 @@ namespace Bank
                     Console.WriteLine("Vad är ditt användarnamn?");
                     username = Console.ReadLine();
                     message = $"Användarnamnet '{username}' fanns inte registrerat";
-                    int passwordTries = 0;
+                    
 
                     // SÅNNAHÄR FOREACH-LOOPAR används ju hela tiden på olika ställen
                     // undra om det går att göra en metod av just bara foeach-loopen på nåt sätt
@@ -213,35 +219,96 @@ namespace Bank
                             PressEnter();
                             break;
                         case "4": // TA UT PENGAR
-                            // glöm inte att användaren måste ange sin pinkod för att lyckas ta ut pengar
 
-                            for (int i = 0; i < accountList.Count; i++)
-                            {
-                                if (accountList[i].userName == username)
+                            foreach (string[] item in customers)
+                            { 
+                                if (username == item[0])
                                 {
-                                    Console.WriteLine($"[{i}] " + accountList[i].accountName + " " + accountList[i].sum);
+                                    while (passwordTries < 3) // passwordTries sparas från inloggningen.
+                                    {
+                                        Console.WriteLine("Vill du ta ut pengar måste du först ange ditt lösenord?\n");
+                                        string password = Console.ReadLine();
+                                        if (password == item[1])
+                                        {
+                                            message = "Lösenord korrekt. Du kan nu ta ut pengar.";
+                                            loginSuccessful = true;
+                                            break;
+                                        }
+                                        else if (password != item[1])
+                                        {
+                                            passwordTries++;
+                                            if (passwordTries == 3)
+                                            {
+                                                message = "Du har skrivit in fel lösenord för många gånger. Användaren låst.";
+                                                loginSuccessful = false;
+                                                bannedList.Add(username);
+                                            }
+                                            Console.WriteLine("Fel lösenord");
+                                            Console.WriteLine($"Återstående försök: {3 - passwordTries}\n");
+                                        }
+                                    }
                                 }
                             }
 
+                            Console.WriteLine(message);
 
-                            Console.Write("Vilket konto vill du dra pengar från? Ange kontonummer: ");
-                            // Endast tillåta användaren att mata in de kontonummer som presenteras... på nåt sätt
-                            // kanske en array som laddas med indexnumrena
-                            string accountWithdrawl = Console.ReadLine();
 
-                            if (int.TryParse(accountWithdrawl, out int accountNr))
+                            if (loginSuccessful)
                             {
+                                List<int> userAccounts = new List<int>(); // Lista skapas som laddas med de indexplatser
+                                // användarens konton ligger på i customers-listan
+                                for (int i = 0; i < accountList.Count; i++)
+                                {
+                                    if (accountList[i].userName == username)
+                                    {
+                                        Console.WriteLine($"[{i}] " + accountList[i].accountName + " " + accountList[i].sum);
+                                        userAccounts.Add(i);
+                                    }
+                                }
+
+
+                                string accountWithdrawl = "";
+                                int accountWithdrawlToInt = 0;
+                                // I följande While tillåts användaren endast mata in någon av de nummer
+                                // som userAccounts-listan har laddats med.
+                                bool go = true;
+                                while (go)
+                                {
+                                    Console.Write("Vilket konto vill du dra pengar från? Ange kontonummer: ");
+                                    accountWithdrawl = Console.ReadLine();
+                                    try
+                                    {
+                                        accountWithdrawlToInt = Convert.ToInt32(accountWithdrawl);
+                                        foreach (int item in userAccounts)
+                                        {
+                                            if (accountWithdrawlToInt == item)
+                                            {
+                                                go = false;
+                                                message = "Hur mycket vill du ta ut?";
+                                            }
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        message = "Kontonummret finns inte. Försök igen.\n";
+                                    }
+                                    Console.WriteLine(message);
+                                }
+
+
+                                    
+
                                 while (true)
                                 {
-                                    Console.Write("Hur mycket vill du ta ut? ");
+                                    
                                     string withdrawl = Console.ReadLine();
                                     if (int.TryParse(withdrawl, out int withdrawlInt))
                                     {
-                                        if(accountList[accountNr].sum > withdrawlInt)
+                                        if (accountList[accountWithdrawlToInt].sum > withdrawlInt)
                                         {
-                                            accountList[accountNr].sum -= withdrawlInt;
+                                            accountList[accountWithdrawlToInt].sum -= withdrawlInt;
                                             Console.WriteLine($"Du har tagit ut {withdrawlInt} kr från kontot.");
-                                            PressEnter();
+
                                             break;
                                         }
                                         else
@@ -255,12 +322,10 @@ namespace Bank
                                     }
                                 }
                                 break;
-                            }
-                            else
-                            {
-                                Console.WriteLine("Input not acceptable");
+
                             }
 
+                            PressEnter();
 
                             break;
                         case "5":
@@ -348,6 +413,9 @@ innan de är färdigtänkta. Och känner inte att jag hinner göra om och tänka
 Pga tidsbrist måste jag välja de lätta lösningarna som jag redan påbörjat.
 
 SÅ arbetssättet jag anammat har varit att bara få nåt att funka... och ev senare slipa det
+
+foreach-loopen i inloggningssystemet fortsätter att loopa även om den redan gått igenom rätt användare (ineffektivt)
+Men man kan lägga in en break; där kanske?
 
 */
 
