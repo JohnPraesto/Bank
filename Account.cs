@@ -10,7 +10,7 @@ namespace Bank
     {
         public string userName;
         public string accountName;
-        public int sum;
+        public double sum;
 
         public Account(string username, string accountName)
         {

@@ -6,36 +6,36 @@ namespace Bank
     internal class Program
     {
         /* 
-        NÄSTA STEG ÄR ATT make a fuckload of methods
+        NÄSTA STEG ÄR ATT
 
-        gör sum till double i account-klassen
+        utelåst i tre minuter
 
         utreda hur man sparar mellan körningar
         
         Vore kul att välja bindningstid på sparkontot och lägga till olika räntor
 
-        Möjligt att effektivisera inloggningsmetoden om man kan ta ut användarens indexplats i customers-Listan?
-
-        Översätt allt till engelska
+        får se om jag pedagogiska färgningar
 
         */
 
         static void Main(string[] args)
         {
-            // Varje array i listan har två element. En för användarnamn, en för lösenord.
+            // Every array in this list has two elements. One for username, one for password.
+            // They are connected by the index of this list.
             List<string[]> customers = new List<string[]>();
 
-            // I denna lista kommer konton lagras, varje konto-objekt består av user, accountName, och sum.
+            // User accounts will be stored in this list. Each object is made up by username, accountName and sum.
             List<Account> accountList = new List<Account>();
 
-            // Denna lista laddas med användare som skrivit in fel lösenord för många gånger
-            // De som läggs till i listan kommer inte få försöka logga in igen.
+            // Users that failed to insert correct password three times will be added to this list
+            // This list is iterated through to find those to be stopped before logging in
             List<string> bannedList = new List<string>();
 
-            // Explain list
+            // This list will contain the index number from accountList of one user
+            // For display of the users account and that accounts index number (will be called account number)
             List<int> userAccounts = new List<int>();
 
-            string message = "";
+            CreateAccounts(accountList, customers);
 
             while (true)
             {
@@ -43,11 +43,11 @@ namespace Bank
                 bool loginSuccessful = false;
                 bool locked = false;
                 int chosenAccount = 0;
-                int withdrawlInt = 0;
+                double withdrawlInt = 0;
 
                 Console.WriteLine("Välkommen till Banken\n");
-                Console.WriteLine("[1] Vill du registrera dig som ny kund hos oss?");
-                Console.WriteLine("[2] Logga in.");
+                Console.WriteLine("[1] Registrera ny användare");
+                Console.WriteLine("[2] Logga in");
                 string choice = Console.ReadLine();
                 Console.Clear();
                 if (choice == "1")
@@ -59,8 +59,8 @@ namespace Bank
                     Console.WriteLine("Vad är ditt användarnamn?");
                     username = Console.ReadLine();
                     
-                    // SÅNNAHÄR FOREACH-LOOPAR används ju hela tiden på olika ställen
-                    // undra om det går att göra en metod av just bara foeach-loopen på nåt sätt
+                    // This foreach-loop looks for the username in bannedList
+                    // If username is in bannedList, the user cannot login
                     foreach (string item in bannedList)
                     {
                         if (item == username)
@@ -75,7 +75,6 @@ namespace Bank
                         loginSuccessful = Login(customers, username, bannedList);
                     }
                     PressEnter();
-                    Console.Clear();
                 }
                 else
                 {
@@ -83,8 +82,7 @@ namespace Bank
                 }
                 while (loginSuccessful)
                 {
-                    Console.Clear();
-                    Console.WriteLine("Välkommen!\n");
+                    Console.WriteLine("===== MENY =====\n");
                     Console.WriteLine("[1] Se Konton och saldo");
                     Console.WriteLine("[2] Öppna nytt konto");
                     Console.WriteLine("[3] Insättning");
@@ -96,6 +94,7 @@ namespace Bank
                     switch (choice)
                     {
                         case "1":
+                            Console.WriteLine("===== KONTON OCH SALDO =====\n");
                             DisplayUserAccounts(accountList, username, userAccounts);
                             if (userAccounts.Count == 0)
                                 Console.WriteLine("Du har inga konton.");
@@ -103,31 +102,35 @@ namespace Bank
                             break;
 
                         case "2":
+                            Console.WriteLine("===== SKAPA NYTT KONTO =====\n");
                             Account newAccount;
                             Console.Write("Vad ska ditt konto heta? ");
                             string accountName = Console.ReadLine();
                             newAccount = new Account(username, accountName);
                             accountList.Add(newAccount);
-                            Console.WriteLine($"Du har nu skapat ett nytt konto med namn {accountName}");
+                            Console.Write("\nDu har nu skapat ett nytt konto: ");
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine(accountName);
+                            Console.ResetColor();
                             PressEnter();
                             break;
 
-                        case "3": // INSÄTTNING  DEPOSIT
+                        case "3":
+                            Console.WriteLine("===== INSÄTTNING =====\n");
                             DisplayUserAccounts(accountList, username, userAccounts);
-
+                            
                             if (userAccounts.Count > 0)
                             {
-                                chosenAccount = ChooseAccount(chosenAccount, userAccounts); // Kommer förändringen av chosenAccount ut från metoden?
-                                                                            //  Det stod nåt om det i Prog 1 boken
+                                chosenAccount = ChooseAccount(chosenAccount, userAccounts); 
 
-                                while (true) // Göra metod av detta. Liknande finns i insättning.
+                                while (true)
                                 {
-                                    Console.WriteLine("Hur mycket pengar vill du sätta in?");
+                                    Console.Write("\nHur mycket pengar vill du sätta in? ");
                                     try
                                     {
-                                        int amount = Convert.ToInt32(Console.ReadLine());
+                                        double amount = Convert.ToDouble(Console.ReadLine());
                                         accountList[chosenAccount].sum += amount;
-                                        Console.WriteLine($"Du har satt it {amount} kr på kontot '{accountList[chosenAccount].accountName}'.");
+                                        Console.WriteLine($"\nDu har satt it {amount} kr på kontot '{accountList[chosenAccount].accountName}'.");
                                         break;
                                     }
                                     catch
@@ -143,8 +146,11 @@ namespace Bank
 
                             break;
 
-                        case "4": // TA UT PENGAR
+                        case "4":
+                            Console.WriteLine("För att kunna ta ut pengar måste du ange ditt lösenord.\n");
                             loginSuccessful = Login(customers, username, bannedList);
+                            PressEnter();
+                            Console.WriteLine("===== UTTAG =====\n");
                             if (loginSuccessful && userAccounts.Count > 0)
                             {
                                 DisplayUserAccounts(accountList, username, userAccounts);
@@ -158,21 +164,24 @@ namespace Bank
                             PressEnter();
                             break;
 
-                        case "5": // ÖVERFÖRING
-                            Console.WriteLine("Vilket konto vill du överföra pengar till?");
+                        case "5":
+                            Console.WriteLine("===== ÖVERFÖRING =====\n");
+                            Console.WriteLine("Vilket konto vill du överföra pengar till?\n");
                             Console.WriteLine("[1] Eget konto");
                             Console.WriteLine("[2] Annan användares konto");
                             choice = Console.ReadLine();
+                            Console.Clear();
                             switch (choice)
                             {
                                 case "1":
 
                                     DisplayUserAccounts(accountList, username, userAccounts);
+                                    Console.WriteLine("Konto att ta pengar ifrån. ");
                                     chosenAccount = ChooseAccount(chosenAccount, userAccounts);
                                     if (userAccounts.Count > 0)
                                     {
                                         withdrawlInt = Withdrawal(accountList, chosenAccount);
-                                        Console.Write("Vilket konto vill du sätta in pengarna på?");
+                                        Console.WriteLine("Vilket konto vill du sätta in pengarna på?");
                                         chosenAccount = ChooseAccount(chosenAccount, userAccounts);
                                         accountList[chosenAccount].sum += withdrawlInt;
                                         Console.WriteLine($"Du har satt in {withdrawlInt} kr på konto '{accountList[chosenAccount].accountName}'");
@@ -188,6 +197,7 @@ namespace Bank
                                 case "2":
 
                                     DisplayUserAccounts(accountList, username, userAccounts);
+                                    Console.WriteLine("Konto att ta pengar ifrån.\n");
                                     chosenAccount = ChooseAccount(chosenAccount, userAccounts);
 
                                     if (userAccounts.Count > 0)
@@ -207,7 +217,7 @@ namespace Bank
                                             userAccounts.Add(i);
                                         }
                                     }
-                                    Console.Write("Vilket konto vill du sätta in pengarna på?");
+                                    Console.Write("\nVilket konto vill du sätta in pengarna på?");
                                     chosenAccount = ChooseAccount(chosenAccount, userAccounts);
                                     accountList[chosenAccount].sum += withdrawlInt;
                                     Console.WriteLine($"Du har satt in {withdrawlInt} kr på konto '{accountList[chosenAccount].accountName}'");
@@ -234,6 +244,37 @@ namespace Bank
                 }
             }
         }
+
+        // This method creates default users and their accounts
+        public static void CreateAccounts(List<Account> accountList, List<string[]> customers)
+        {
+            string[] usernames = new string[5] { "Anna", "Berit", "Celine", "Dakota", "Ewald" };
+            for (int i = 0; i < usernames.Length; i++)
+            {
+                Account newAccount;
+                newAccount = new Account(usernames[i], (usernames[i] + "s Lönekonto"));
+                accountList.Add(newAccount);
+            }
+            for (int i = 0; i < usernames.Length; i++)
+            {
+                Account newAccount;
+                newAccount = new Account(usernames[i], (usernames[i] + "s Sparkonto"));
+                accountList.Add(newAccount);
+            }
+            for (int i = 0; i < accountList.Count; i++)
+            {
+                accountList[i].sum = i * 100;
+            }
+            for (int i = 0; i < usernames.Length; i++)
+            {
+                string[] customer = new string[2];
+                customer[0] = usernames[i]; // The default users will have same password as username
+                customer[1] = usernames[i];
+                customers.Add(customer);
+            }
+        }
+
+        // Lets the user create a new customer
         public static void NewCustomer(List<string[]> customers)
         {
             string[] customer = new string[2];
@@ -242,10 +283,8 @@ namespace Bank
             customer[0] = Console.ReadLine();
             foreach (string[] item in customers)
             {
-                if (customer[0] == item[0])
-                {
+                if (customer[0] == item[0]) // If username is already registered
                     go = false;
-                }
             }
 
             if (go)
@@ -263,6 +302,9 @@ namespace Bank
             Console.Clear();
         }
 
+        // Method for Loging in to the Bank. It's also used to verify user before withdrawing money.
+        // Asks the user for password. If wrong password is given three times. The user is added
+        // to the bannedList and will not be able to log in anymore.
         public static bool Login(List<string[]> customers, string username, List<string> bannedList)
         {
             int passwordTries = 0;
@@ -276,7 +318,7 @@ namespace Bank
                         string password = Console.ReadLine();
                         if (password == item[1])
                         {
-                            Console.WriteLine("Rätt lösenord!");
+                            Console.WriteLine($"\nVälkommen, {username}! Du loggas nu in.");
                             return true;
                         }
                         else if (password != item[1])
@@ -300,29 +342,34 @@ namespace Bank
 
         public static void PressEnter()
         {
-            Console.WriteLine("Enter för att gå vidare.");
+            Console.WriteLine("\nEnter för att gå vidare.");
             Console.ReadLine();
+            Console.Clear();
         }
 
+        // In this method, accountList is iterated through to find all Account-objects with matching username
+        // And the accounts will be displayed to console
         public static void DisplayUserAccounts(List<Account> accountList, string username, List<int> userAccounts)
-        { // Det är nåt lurt här. Med userAccounts tror jag. Ibland visas inte listan. Nåt med clear eller add alltså.
+        {
             userAccounts.Clear();
             for (int i = 0; i < accountList.Count; i++)
             {
                 if (accountList[i].userName == username)
                 {
-                    Console.WriteLine($"Kontonummer: {i}\t Namn: " + accountList[i].accountName + "\t Saldo: " + accountList[i].sum);
+                    Console.WriteLine($"Kontonummer: {i}");
+                    Console.WriteLine($"Namn:        {accountList[i].accountName}");
+                    Console.WriteLine($"Saldo:       {accountList[i].sum}");
+                    Console.WriteLine("---------------------------------");
                     userAccounts.Add(i);
                 }
             }
         }
 
-
-        // I följande metod tillåts användaren endast mata in någon av de nummer
-        // som userAccounts-listan har laddats med.
+        // Whenever the user needs to choose an account, this method is called.
+        // This method only allows the user to choose an account number of those on display
         public static int ChooseAccount(int chosenAccount, List<int> userAccounts)
         {
-            string message = "Felaktigt kontonummer. Försök igen.\n"; // samma rad skrivs två gånger i samma metod. Gillar det inte.
+            string message = "Felaktigt kontonummer. Försök igen.\n";
             while (true)
             {
                 Console.Write("Välj konto. Ange kontonummer: ");
@@ -346,17 +393,16 @@ namespace Bank
             }
         }
 
-        // NOT: OM MAN VÄLJER ETT KONTO SOM INTE HAR NÅGRA PENGAR
-        // KAN MAN ALDRIG KOMMA UR LOOPEN
-        public static int Withdrawal(List<Account> accountList, int chosenAccount)
+        // This method is called whenever the user wants to take money out of an account
+        public static double Withdrawal(List<Account> accountList, int chosenAccount)
         {
             while (true)
             {
-                Console.WriteLine("Hur mycket vill du ta ut?");
+                Console.Write("\nHur mycket vill du ta ut? ");
                 string withdrawl = Console.ReadLine();
-                if (int.TryParse(withdrawl, out int withdrawlInt))
+                if (double.TryParse(withdrawl, out double withdrawlInt))
                 {
-                    if (accountList[chosenAccount].sum > withdrawlInt)
+                    if (accountList[chosenAccount].sum >= withdrawlInt)
                     {
                         accountList[chosenAccount].sum -= withdrawlInt;
                         Console.WriteLine($"Du har tagit ut {withdrawlInt} kr från kontot '{accountList[chosenAccount].accountName}'.");
@@ -415,27 +461,6 @@ metoderna så att de ska passa på alla olika ställen.
 foreach-loopen i inloggningssystemet fortsätter att loopa även om den redan gått igenom rätt användare (ineffektivt)
 Men man kan lägga in en break; där kanske?
 
-*/
+börjar släppa spara mennal körningar... för lite tid kvar.
 
-
-/* OLD CODE
-
-
-
-            // Display registered users
-            if (customers.Count <= 0)
-            {
-                Console.WriteLine("\nDet finns inga registrerade kunder.");
-            }
-            else
-            {
-                foreach (string[] item in customers)
-                {
-                    // this line was suggested by ChatGPT
-                    // Console.WriteLine(string.Join(" ", item)); 
-                    // it does exactly the same thing as this next line
-                    // but this line is more comprehensable for me
-                    Console.WriteLine(item[0] + " " +  item[1]);
-                }
-            }
 */
