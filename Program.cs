@@ -5,19 +5,6 @@ namespace Bank
 {
     internal class Program
     {
-        /* 
-        NÄSTA STEG ÄR ATT
-
-        utelåst i tre minuter
-
-        utreda hur man sparar mellan körningar
-        
-        Vore kul att välja bindningstid på sparkontot och lägga till olika räntor
-
-        får se om jag pedagogiska färgningar
-
-        */
-
         static void Main(string[] args)
         {
             // Every array in this list has two elements. One for username, one for password.
@@ -421,46 +408,3 @@ namespace Bank
         }
     }
 }
-
-
-/* TILL README
-
-valt att man måste skapa användare. alla variabler och listor är tomma vid start.
-eftersom jag senare hoppas på att få in att det sparas mellan körningar.
-Men får se om jag hinner det.
-
-Tankar kring metoder. Repeterar kod? Rensar upp i main?
-
-Vill inte har för många if i if. Djupet.
-
-Funderingar kring hur man kopplar en användare till sitt lösenord och sina konton
-Först lista med array bestående av användare + lösen. Men hur binda till konton?
-Börjar överväga objekt.
-Struktur:
-
-inte riktigt nöjd med messege =
-beroende på var i if-sataserna man är
-den ska meddela om man lyckats logga in eller fel lösenord eller användare finns ej
-
-känner hela tiden att jag är missnöjd med koden jag skapar
-iom jag var bortrest förra veckan och iom jag har ambitiösa mål
-inte bara för betyg, men mest för att lära, vill jag uppnå alla VG mål
-samt inkludera alla funtkioner i mitt program, även extrauppgifterna.
-Så är jag stressad för att jag inte har mer tid. Jag slänger mig in i lösningar
-innan de är färdigtänkta. Och känner inte att jag hinner göra om och tänka om.
-Pga tidsbrist måste jag välja de lätta lösningarna som jag redan påbörjat.
-
-SÅ arbetssättet jag anammat har varit att bara få nåt att funka... och ev senare slipa det
-
-MITT GENERELLA ARBETSSÄT R ATT GÖRA LÄTTA LÖSNINGAR FÖRST
-sedan se vilka delar man kan effektivisera eller göra metoder av
-
-.. men har vart rätt så rörigt att navigera bland 600 rader ometodiserad kod och försöka synkronisera
-metoderna så att de ska passa på alla olika ställen.
-
-foreach-loopen i inloggningssystemet fortsätter att loopa även om den redan gått igenom rätt användare (ineffektivt)
-Men man kan lägga in en break; där kanske?
-
-börjar släppa spara mennal körningar... för lite tid kvar.
-
-*/
